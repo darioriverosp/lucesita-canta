@@ -20,7 +20,7 @@ app = modal.App("lucesita-motor")
 imagen_ia = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("ffmpeg")
-    .pip_install("torch", "demucs==4.1.0", "yt-dlp[default]", "deno")
+    .pip_install("torch", "numpy", "demucs==4.1.0", "yt-dlp[default]", "deno")
     # Baja el modelo de IA al construir la imagen, así no se descarga en cada canción
     .run_commands(f"python -c \"from demucs.pretrained import get_model; get_model('{MODELO}')\"")
 )
