@@ -394,3 +394,11 @@ dialog label { font-weight: 800; display: block; margin: 12px 0 6px; }
   margin: 28px 0 18px; padding-top: 18px; border-top: 2px dashed #eadcff;
 }
 .guardada a { color: var(--magenta); font-weight: 800; }
+
+/* ---------- Pie de página ---------- */
+.pie {
+  text-align: center; color: rgba(255, 255, 255, 0.85); font-size: 0.9rem; font-weight: 700;
+  margin: 32px 8px 0; line-height: 1.6;
+}
+.pie a { color: var(--sol); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+.pie a:hover { color: #fff3a6; }
