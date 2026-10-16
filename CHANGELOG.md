@@ -1,0 +1,74 @@
+# Historial de versiones
+
+Todas las versiones de **Luza Canta** (antes *Lucesita Canta*). Formato basado en
+[Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y [versionado semántico](https://semver.org/lang/es/):
+`MAYOR.MENOR.PARCHE` → MAYOR = cambio grande o que rompe algo, MENOR = funciones nuevas, PARCHE = correcciones.
+
+---
+
+## [2.3.0] — 2026-10-16 · Créditos, rendimiento y documentación
+### Agregado
+- Pie de página: *© 2026 Hecho con código y 💙 por Gonzalo Dario Riveros Plaza* con enlace a su web.
+- `docs/COMO-FUNCIONA.md`: explicación completa de la arquitectura, la IA, los costos y un guion para video.
+- `CHANGELOG.md` (este archivo) y README renovado con tecnologías y versiones.
+### Mejorado
+- **Rendimiento (PageSpeed):** el CSS va dentro del HTML (`inlineStylesheets: 'always'`), las fuentes Baloo 2 y
+  Nunito se sirven desde el propio sitio con `@fontsource` (solo alfabeto latino) y se precargan; caché de
+  1 año para `/_astro/*`. Se eliminaron las 2 solicitudes que bloqueaban el dibujado de la página.
+
+## [2.2.0] — 2026-10-16 · Voz guía para ensayar
+### Agregado
+- **Voz guía:** botones *Sin voz · Bajita 20 % · Media 35 %* que mezclan la voz original bajita debajo de la
+  pista karaoke. Compatible con el cambio de tono; los archivos guardados/enviados la incluyen (`-vozguia35`).
+### Corregido
+- WhatsApp: si preparar el MP3 tarda, Android rechazaba el envío por falta de "toque reciente"; ahora la app
+  deja el archivo listo y pide un segundo toque (*✅ Lista · toca para enviar*).
+- Motor: borra los archivos temporales de cada canción; error amable si FFmpeg no puede leer el archivo;
+  mensaje *"esperando turno"* cuando hay otra canción en proceso; `/pista` responde 404 (no 500) si falló.
+- `/recibir` redirige a la portada si se comparte antes de instalar la app; `id` fijo en el manifest.
+- Más espacio entre los botones de descarga y el aviso *"Guardada en Mis canciones"*.
+
+## [2.1.0] — 2026-10-16 · Link de YouTube con cookies
+### Agregado
+- El motor usa las cookies de una cuenta de YouTube (secreto `YT_COOKIES` en GitHub → secreto `luza-youtube`
+  en Modal) para que YouTube no bloquee las descargas desde el servidor.
+
+## [2.0.0] — 2026-10-16 · Nuevo nombre: Luza Canta
+### Cambiado
+- La app pasa a llamarse **Luza Canta**: textos, manifest, ícono en Android (*Luza*), repositorio
+  (`luza-canta`), web (`luza-canta.netlify.app`) y motor (`luza-motor`).
+- Se mantiene el nombre interno de la base de datos para no perder las canciones guardadas.
+- ⚠️ El link anterior `lucesita-canta.netlify.app` dejó de funcionar: hay que reinstalar la app.
+
+## [1.2.0] — 2026-10-16 · Integración con WhatsApp
+### Agregado
+- **Recibir desde WhatsApp:** Luza aparece en *Compartir* de Android (Web Share Target).
+- **Enviar por WhatsApp** la pista karaoke o la voz (Web Share API), con el tono elegido.
+- Botones *Guardar en el celular*, ayuda para encontrar audios de WhatsApp y **buscador** en *Mis canciones*.
+
+## [1.1.0] — 2026-10-16 · Motor de IA en Modal
+### Cambiado
+- El motor de IA se mueve de Hugging Face (Gradio pasó a ser de pago) a **Modal**: API con FastAPI,
+  trabajos en segundo plano (`spawn` + consulta de estado) y progreso en un `modal.Dict`.
+- Publicación automática del motor con **GitHub Actions** (`.github/workflows/motor.yml`) usando los secretos
+  `MODAL_TOKEN_ID` y `MODAL_TOKEN_SECRET`.
+- Corre en **CPU** por defecto (sin tarjeta); GPU opcional con la variable `MOTOR_GPU=T4`.
+### Corregido
+- Se agregó `numpy`, que Demucs necesita en Linux.
+
+## [1.0.0] — 2026-10-16 · Primera versión (Lucesita Canta)
+### Agregado
+- Web app con **Astro**: flujo de 3 pasos (*Elige tu canción → ¡Quitar la voz! → ¡A cantar!*), diseño colorido
+  y responsive pensado para celular.
+- Subir MP3 o pegar link de YouTube; **Modo rápido** sin IA (cancelación de fase L − R).
+- Cambio de **tono** ±6 semitonos (SoundTouchJS), exportar MP3 (lamejs), **Mis canciones** (IndexedDB).
+- **PWA** instalable en Android (manifest, service worker, íconos).
+- Motor de IA con **Demucs** (`htdemucs`), FFmpeg y yt-dlp.
+
+[2.3.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v2.3.0
+[2.2.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v2.2.0
+[2.1.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v2.1.0
+[2.0.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v2.0.0
+[1.2.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v1.2.0
+[1.1.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v1.1.0
+[1.0.0]: https://github.com/darioriverosp/luza-canta/releases/tag/v1.0.0
