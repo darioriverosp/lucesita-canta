@@ -13,3 +13,9 @@
   to = "/"
   status = 303
   force = true
+
+# Los archivos de /_astro tienen nombre único por versión: se pueden guardar en caché por un año
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

@@ -1,4 +1,12 @@
 ---
+// Fuentes servidas desde el propio sitio (sin esperar a Google Fonts); solo el alfabeto latino
+import '@fontsource/baloo-2/latin-700.css';
+import '@fontsource/baloo-2/latin-800.css';
+import '@fontsource/nunito/latin-600.css';
+import '@fontsource/nunito/latin-700.css';
+import '@fontsource/nunito/latin-800.css';
+import nunito700 from '@fontsource/nunito/files/nunito-latin-700-normal.woff2?url';
+import baloo800 from '@fontsource/baloo-2/files/baloo-2-latin-800-normal.woff2?url';
 import '../styles/global.css';
 
 interface Props {
@@ -29,9 +37,8 @@ const luces = Array.from({ length: 34 }, (_, i) => ({
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/icons/icono.svg" />
     <link rel="apple-touch-icon" href="/icons/icono-192.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+    <link rel="preload" href={nunito700} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={baloo800} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
     <div class="fondo" aria-hidden="true">
