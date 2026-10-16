@@ -1,0 +1,198 @@
+"""Motor de Lucesita Canta en Modal: quita la voz de una canción con Demucs (IA de código abierto) en una GPU.
+
+Se publica solo desde GitHub (ver .github/workflows/motor.yml). Queda en:
+    https://<tu-usuario-de-modal>--lucesita-motor.modal.run
+
+API que usa la web:
+    POST /separar          (formulario con "archivo")  -> {"id": ...}
+    POST /youtube          {"link": "https://..."}     -> {"id": ...}
+    GET  /estado/{id}                                   -> {"listo": bool, "mensaje": str, "titulo": str, "error": str}
+    GET  /pista/{id}/{instrumental|voz}                 -> MP3
+"""
+
+import modal
+
+MAX_MINUTOS = 12
+MODELO = "htdemucs"
+
+app = modal.App("lucesita-motor")
+
+imagen_ia = (
+    modal.Image.debian_slim(python_version="3.11")
+    .apt_install("ffmpeg")
+    .pip_install("torch", "demucs==4.1.0", "yt-dlp[default]", "deno")
+    # Baja el modelo de IA al construir la imagen, así no se descarga en cada canción
+    .run_commands(f"python -c \"from demucs.pretrained import get_model; get_model('{MODELO}')\"")
+)
+imagen_web = modal.Image.debian_slim(python_version="3.11").pip_install("fastapi[standard]", "python-multipart")
+
+# Mensajes de progreso que la web va mostrando ("Bajando de YouTube…", "Separando la voz…")
+progreso = modal.Dict.from_name("lucesita-progreso", create_if_missing=True)
+
+
+class ErrorAmable(Exception):
+    """Error con un mensaje pensado para mostrárselo a la usuaria tal cual."""
+
+
+@app.function(
+    image=imagen_ia,
+    gpu="T4",
+    timeout=15 * 60,
+    max_containers=1,  # una canción a la vez: limita el gasto
+    scaledown_window=120,  # se apaga a los 2 minutos sin uso (no cobra mientras duerme)
+)
+def procesar(origen: dict) -> dict:
+    import json
+    import os
+    import re
+    import subprocess
+    import tempfile
+    from pathlib import Path
+
+    id_trabajo = modal.current_function_call_id()
+
+    def avisar(texto):
+        progreso[id_trabajo] = texto
+
+    trabajo = Path(tempfile.mkdtemp())
+    titulo = origen.get("titulo") or "Canción"
+
+    if origen.get("link"):
+        import yt_dlp
+
+        avisar("Bajando la canción de YouTube… ▶️")
+        opciones = {
+            "format": "bestaudio/best",
+            "outtmpl": str(trabajo / "descarga.%(ext)s"),
+            "noplaylist": True,
+            "quiet": True,
+            "max_filesize": 60 * 1024 * 1024,
+            "match_filter": yt_dlp.utils.match_filter_func(f"duration <= {MAX_MINUTOS * 60}"),
+        }
+        # Opcional: cookies de YouTube (variable YT_COOKIES) por si YouTube pide verificación
+        if os.environ.get("YT_COOKIES"):
+            (trabajo / "cookies.txt").write_text(os.environ["YT_COOKIES"])
+            opciones["cookiefile"] = str(trabajo / "cookies.txt")
+        try:
+            with yt_dlp.YoutubeDL(opciones) as ydl:
+                info = ydl.extract_info(origen["link"], download=True)
+        except Exception as e:  # noqa: BLE001
+            print(f"yt-dlp: {e}", flush=True)
+            raise ErrorAmable("YouTube no dejó bajar esta canción 😕. Descárgala aparte y usa “Subir MP3”.")
+        archivos = list(trabajo.glob("descarga.*"))
+        if not info or not archivos:
+            raise ErrorAmable(f"No se pudo bajar. ¿La canción dura más de {MAX_MINUTOS} minutos?")
+        original = archivos[0]
+        titulo = info.get("title") or titulo
+    else:
+        original = trabajo / "subida"
+        original.write_bytes(origen["audio"])
+
+    sonda = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "json", str(original)],
+        capture_output=True, text=True,
+    )
+    try:
+        duracion = float(json.loads(sonda.stdout)["format"]["duration"])
+    except (KeyError, ValueError, json.JSONDecodeError):
+        raise ErrorAmable("No pude leer ese archivo. ¿Seguro que es una canción (MP3, M4A, WAV)?")
+    if duracion > MAX_MINUTOS * 60:
+        raise ErrorAmable(f"La canción dura más de {MAX_MINUTOS} minutos. Elige una más corta.")
+
+    avisar("Preparando la canción… 🎼")
+    entrada = trabajo / "cancion.wav"
+    subprocess.run(
+        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(original), "-ac", "2", "-ar", "44100", str(entrada)],
+        check=True,
+    )
+
+    avisar("La inteligencia artificial está separando la voz… 🪄")
+    r = subprocess.run(
+        ["python", "-m", "demucs", "-n", MODELO, "-d", "cuda", "--two-stems=vocals", "--mp3", "--mp3-bitrate", "192",
+         "-o", str(trabajo / "salida"), str(entrada)],
+        capture_output=True, text=True,
+    )
+    if r.returncode != 0:
+        print(r.stderr[-3000:], flush=True)
+        raise ErrorAmable("La IA no pudo procesar esta canción. Intenta con otro archivo.")
+
+    carpeta = trabajo / "salida" / MODELO / "cancion"
+    avisar("¡Listo! 🎉")
+    return {
+        "titulo": re.sub(r"\s+", " ", titulo).strip()[:120],
+        "instrumental": (carpeta / "no_vocals.mp3").read_bytes(),
+        "voz": (carpeta / "vocals.mp3").read_bytes(),
+    }
+
+
+@app.function(image=imagen_web, max_containers=2)
+@modal.concurrent(max_inputs=20)
+@modal.asgi_app(label="lucesita-motor")
+def web():
+    import re
+
+    from fastapi import FastAPI, File, HTTPException, UploadFile
+    from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import Response
+    from pydantic import BaseModel
+
+    api = FastAPI(title="Lucesita Motor")
+    api.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+    youtube = re.compile(r"^(https?://)?(www\.|m\.|music\.)?(youtube\.com|youtu\.be)/", re.I)
+
+    class Link(BaseModel):
+        link: str
+
+    def resultado(id_: str):
+        """Devuelve el resultado si ya terminó, o None si sigue trabajando."""
+        llamada = modal.FunctionCall.from_id(id_)
+        try:
+            return llamada.get(timeout=0)
+        except (TimeoutError, modal.exception.TimeoutError):
+            return None
+
+    @api.get("/")
+    def hola():
+        return {"motor": "Lucesita Canta", "ok": True}
+
+    @api.post("/separar")
+    async def separar(archivo: UploadFile = File(...)):
+        datos = await archivo.read()
+        if not datos:
+            raise HTTPException(400, "El archivo está vacío.")
+        if len(datos) > 60 * 1024 * 1024:
+            raise HTTPException(413, "El archivo es muy grande (máximo 60 MB).")
+        titulo = re.sub(r"\.[^.]+$", "", archivo.filename or "Canción")
+        llamada = procesar.spawn({"audio": datos, "titulo": titulo})
+        return {"id": llamada.object_id}
+
+    @api.post("/youtube")
+    def desde_youtube(cuerpo: Link):
+        if not youtube.match(cuerpo.link.strip()):
+            raise HTTPException(400, "Ese no parece un link de YouTube.")
+        llamada = procesar.spawn({"link": cuerpo.link.strip()})
+        return {"id": llamada.object_id}
+
+    @api.get("/estado/{id_}")
+    def estado(id_: str):
+        try:
+            r = resultado(id_)
+        except ErrorAmable as e:
+            return {"listo": False, "error": str(e)}
+        except Exception as e:  # noqa: BLE001
+            print(f"estado {id_}: {e!r}", flush=True)
+            return {"listo": False, "error": "Algo salió mal con el motor. Intenta de nuevo."}
+        if r is None:
+            return {"listo": False, "mensaje": progreso.get(id_, "Despertando la inteligencia artificial… 😴 (puede tardar 1 minuto)")}
+        return {"listo": True, "titulo": r["titulo"]}
+
+    @api.get("/pista/{id_}/{cual}")
+    def pista(id_: str, cual: str):
+        if cual not in ("instrumental", "voz"):
+            raise HTTPException(404)
+        r = resultado(id_)
+        if r is None:
+            raise HTTPException(409, "Todavía no está lista.")
+        return Response(r[cual], media_type="audio/mpeg")
+
+    return api

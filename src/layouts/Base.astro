@@ -61,9 +61,9 @@ const luces = Array.from({ length: 34 }, (_, i) => ({
     <dialog id="ajustes">
       <form method="dialog">
         <h2>⚙️ Ajustes</h2>
-        <p class="nota">Aquí va el nombre del motor de inteligencia artificial (el Space de Hugging Face). Normalmente ya viene puesto; solo cámbialo si te lo piden.</p>
+        <p class="nota">Aquí va el nombre del motor de inteligencia artificial (la dirección del motor en Modal). Normalmente ya viene puesto; solo cámbialo si te lo piden.</p>
         <label for="campo-motor">Motor</label>
-        <input id="campo-motor" class="campo" placeholder="usuario/lucesita-motor" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        <input id="campo-motor" class="campo" placeholder="https://usuario--lucesita-motor.modal.run" autocomplete="off" autocapitalize="off" spellcheck="false" />
         <div class="fila-botones">
           <button class="boton boton-suave" value="cancelar">Cancelar</button>
           <button class="boton" value="guardar" id="guardar-ajustes">Guardar</button>

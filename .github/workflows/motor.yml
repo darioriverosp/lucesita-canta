@@ -1,0 +1,23 @@
+# Publica el motor de IA en Modal cada vez que cambia la carpeta motor/ (o a mano desde la pestaña Actions).
+name: Publicar motor en Modal
+
+on:
+  push:
+    branches: [main]
+    paths: ["motor/**", ".github/workflows/motor.yml"]
+  workflow_dispatch:
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install modal
+      - name: Publicar
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: modal deploy motor/modal_app.py
