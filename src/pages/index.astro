@@ -20,7 +20,7 @@ import Base from '../layouts/Base.astro';
       <p class="elegido" id="elegido" hidden></p>
       <details class="nota ayuda-wa">
         <summary><b>💬 ¿La canción te llegó por WhatsApp?</b></summary>
-        <p><b>Lo más fácil:</b> en WhatsApp mantén presionado el audio → toca <b>Compartir</b> (↗️) → elige <b>Lucesita</b>. ¡Se abre aquí solita!</p>
+        <p><b>Lo más fácil:</b> en WhatsApp mantén presionado el audio → toca <b>Compartir</b> (↗️) → elige <b>Luza</b>. ¡Se abre aquí solita!</p>
         <p><b>O búscala aquí:</b> toca “Elegir la canción” → menú ☰ → <b>Audio</b> o <b>Archivos</b> → carpeta <b>WhatsApp Audio</b> o <b>WhatsApp Documents</b>.</p>
       </details>
     </div>
@@ -198,13 +198,13 @@ import Base from '../layouts/Base.astro';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // ---- Canción o link compartidos desde WhatsApp (Compartir → Lucesita) ----
+    // ---- Canción o link compartidos desde WhatsApp (Compartir → Luza) ----
     async function recibirCompartido() {
       const params = new URLSearchParams(location.search);
       const link = params.get('link');
       if (params.has('compartido')) {
         try {
-          const cache = await caches.open('lucesita-compartido');
+          const cache = await caches.open('luza-compartido');
           const r = await cache.match('/compartido');
           if (r) {
             const nombre = decodeURIComponent(r.headers.get('X-Nombre') || 'Canción');

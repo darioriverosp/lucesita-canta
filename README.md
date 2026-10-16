@@ -1,11 +1,11 @@
-# ✨ Lucesita Canta
+# ✨ Luza Canta
 
 Web app para quitarle la voz a las canciones y cantarlas en karaoke. Se instala en Android como una app.
 La página va gratis en Netlify o Vercel y la inteligencia artificial corre en [Modal](https://modal.com)
 (con GPU; cada canción cuesta ~1 centavo de dólar, y Modal regala $1 al mes sin tarjeta o $30 al mes con tarjeta).
 
 ```
-lucesita canta/
+luza canta/
 ├─ src/                 ← la página web (Astro)
 ├─ public/              ← íconos, manifest y service worker (para instalarla en Android)
 ├─ motor/modal_app.py   ← el "motor" de IA que quita la voz (va en Modal)
@@ -23,7 +23,7 @@ lucesita canta/
    - `MODAL_TOKEN_SECRET` = el Token Secret
 4. En GitHub ve a la pestaña **Actions → Publicar motor en Modal → Run workflow**.
    La primera vez tarda unos 5–10 minutos (instala la IA). Cuando salga ✅ verde, el motor está en:
-   `https://TU-USUARIO-DE-MODAL--lucesita-motor.modal.run`
+   `https://TU-USUARIO-DE-MODAL--luza-motor.modal.run`
 5. Ábrela en el navegador: si dice `"ok": true`, ¡el motor funciona!
 
 > 💡 **Para no llevarte sorpresas:** en Modal, *Settings → Usage and Billing*, pon un límite de gasto mensual.
@@ -51,7 +51,7 @@ por otro lado y usa **“Subir MP3”**, que siempre funciona.
 ## Paso 3 · Instalarla en el Android de mamá
 1. Abre la dirección de la página en **Chrome**.
 2. Toca el botón amarillo **“Instalar”** que aparece arriba (o menú ⋮ → *Agregar a pantalla principal*).
-3. ¡Listo! Queda un ícono de **Lucesita** como cualquier otra app. 🎤
+3. ¡Listo! Queda un ícono de **Luza** como cualquier otra app. 🎤
 
 ---
 

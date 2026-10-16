@@ -1,7 +1,7 @@
-"""Motor de Lucesita Canta en Modal: quita la voz de una canción con Demucs (IA de código abierto) en una GPU.
+"""Motor de Luza Canta en Modal: quita la voz de una canción con Demucs (IA de código abierto) en una GPU.
 
 Se publica solo desde GitHub (ver .github/workflows/motor.yml). Queda en:
-    https://<tu-usuario-de-modal>--lucesita-motor.modal.run
+    https://<tu-usuario-de-modal>--luza-motor.modal.run
 
 API que usa la web:
     POST /separar          (formulario con "archivo")  -> {"id": ...}
@@ -20,7 +20,7 @@ GPU = os.environ.get("MOTOR_GPU") or None
 MAX_MINUTOS = 12
 MODELO = "htdemucs"
 
-app = modal.App("lucesita-motor")
+app = modal.App("luza-motor")
 
 imagen_ia = (
     modal.Image.debian_slim(python_version="3.11")
@@ -32,7 +32,7 @@ imagen_ia = (
 imagen_web = modal.Image.debian_slim(python_version="3.11").pip_install("fastapi[standard]", "python-multipart")
 
 # Mensajes de progreso que la web va mostrando ("Bajando de YouTube…", "Separando la voz…")
-progreso = modal.Dict.from_name("lucesita-progreso", create_if_missing=True)
+progreso = modal.Dict.from_name("luza-progreso", create_if_missing=True)
 
 
 class ErrorAmable(Exception):
@@ -134,7 +134,7 @@ def procesar(origen: dict) -> dict:
 
 @app.function(image=imagen_web, max_containers=2)
 @modal.concurrent(max_inputs=20)
-@modal.asgi_app(label="lucesita-motor")
+@modal.asgi_app(label="luza-motor")
 def web():
     import re
 
@@ -143,7 +143,7 @@ def web():
     from fastapi.responses import Response
     from pydantic import BaseModel
 
-    api = FastAPI(title="Lucesita Motor")
+    api = FastAPI(title="Luza Motor")
     api.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
     youtube = re.compile(r"^(https?://)?(www\.|m\.|music\.)?(youtube\.com|youtu\.be)/", re.I)
 
@@ -160,7 +160,7 @@ def web():
 
     @api.get("/")
     def hola():
-        return {"motor": "Lucesita Canta", "ok": True}
+        return {"motor": "Luza Canta", "ok": True}
 
     @api.post("/separar")
     async def separar(archivo: UploadFile = File(...)):

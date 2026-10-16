@@ -140,7 +140,7 @@ export function montarReproductor(contenedor, cancion) {
   function enviar(cual, boton) {
     return conBoton(boton, async () => {
       const archivo = await preparar(cual, boton);
-      const datos = { files: [archivo], title: cancion.titulo, text: `🎤 ${cancion.titulo} (${cual === 'voz' ? 'solo voz' : 'pista karaoke'}) · Lucesita Canta ✨` };
+      const datos = { files: [archivo], title: cancion.titulo, text: `🎤 ${cancion.titulo} (${cual === 'voz' ? 'solo voz' : 'pista karaoke'}) · Luza Canta ✨` };
       if (navigator.canShare?.(datos)) {
         try {
           await navigator.share(datos);

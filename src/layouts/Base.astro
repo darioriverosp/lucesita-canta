@@ -5,7 +5,7 @@ interface Props {
   titulo?: string;
   pagina: 'cantar' | 'historial';
 }
-const { titulo = 'Lucesita Canta', pagina } = Astro.props;
+const { titulo = 'Luza Canta', pagina } = Astro.props;
 
 // Lucecitas del fondo (posiciones fijas para que no cambien en cada visita)
 const colores = ['#ffc93c', '#ff3d8b', '#2ec5ff', '#2ee6a8', '#ffffff', '#c13cff'];
@@ -42,10 +42,10 @@ const luces = Array.from({ length: 34 }, (_, i) => ({
 
     <main class="contenedor">
       <header class="cabecera">
-        <h1 class="logo">✨ Lucesita <span class="brillo">Canta</span></h1>
+        <h1 class="logo">✨ Luza <span class="brillo">Canta</span></h1>
         <p class="lema">Quita la voz a tus canciones y ¡a cantar! 🎤</p>
         <div class="instalar" id="instalar" hidden>
-          <p>📲 Instala Lucesita Canta en tu celular</p>
+          <p>📲 Instala Luza Canta en tu celular</p>
           <button class="boton boton-sol" id="boton-instalar">Instalar</button>
         </div>
       </header>
@@ -63,7 +63,7 @@ const luces = Array.from({ length: 34 }, (_, i) => ({
         <h2>⚙️ Ajustes</h2>
         <p class="nota">Aquí va el nombre del motor de inteligencia artificial (la dirección del motor en Modal). Normalmente ya viene puesto; solo cámbialo si te lo piden.</p>
         <label for="campo-motor">Motor</label>
-        <input id="campo-motor" class="campo" placeholder="https://usuario--lucesita-motor.modal.run" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        <input id="campo-motor" class="campo" placeholder="https://usuario--luza-motor.modal.run" autocomplete="off" autocapitalize="off" spellcheck="false" />
         <div class="fila-botones">
           <button class="boton boton-suave" value="cancelar">Cancelar</button>
           <button class="boton" value="guardar" id="guardar-ajustes">Guardar</button>

@@ -1,6 +1,7 @@
 // Historial de canciones guardado en el propio celular (IndexedDB).
 import { get, set, del, keys, createStore } from 'idb-keyval';
 
+// Nombre interno de la app anterior (Lucesita): se mantiene para no perder las canciones ya guardadas.
 const almacen = createStore('lucesita-canta', 'canciones');
 
 /** cancion = { id, titulo, fecha, modo: 'ia' | 'rapido', instrumental: Blob, voz: Blob } */

@@ -1,6 +1,6 @@
 // Conexión con el "motor" de IA en Modal (Demucs en una GPU + yt-dlp).
-const CLAVE = 'lucesita-motor';
-const POR_DEFECTO = 'https://darioriverosp--lucesita-motor.modal.run';
+const CLAVE = 'luza-motor';
+const POR_DEFECTO = 'https://darioriverosp--luza-motor.modal.run';
 
 export function motorConfigurado() {
   return obtenerMotor() !== '';

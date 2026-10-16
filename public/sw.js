@@ -1,6 +1,6 @@
-// Service worker de Lucesita Canta: permite instalarla y abrirla aunque haya mala señal.
-const CACHE = 'lucesita-v2';
-const COMPARTIDO = 'lucesita-compartido';
+// Service worker de Luza Canta: permite instalarla y abrirla aunque haya mala señal.
+const CACHE = 'luza-v3';
+const COMPARTIDO = 'luza-compartido';
 const BASICOS = ['/', '/historial', '/manifest.webmanifest', '/icons/icono-192.png', '/icons/icono.svg'];
 
 self.addEventListener('install', (e) => {
@@ -15,7 +15,7 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Cuando desde WhatsApp (u otra app) tocan "Compartir → Lucesita", llega aquí la canción o el link
+// Cuando desde WhatsApp (u otra app) tocan "Compartir → Luza", llega aquí la canción o el link
 async function recibir(req) {
   const datos = await req.formData();
   const archivo = datos.get('audio');
