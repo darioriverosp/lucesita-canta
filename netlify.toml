@@ -6,3 +6,10 @@
   for = "/sw.js"
   [headers.values]
     Cache-Control = "no-cache"
+
+# Si alguien comparte a Luza antes de que la app termine de instalarse, se abre la portada en vez de un error
+[[redirects]]
+  from = "/recibir"
+  to = "/"
+  status = 303
+  force = true

@@ -1,4 +1,4 @@
-"""Motor de Luza Canta en Modal: quita la voz de una canción con Demucs (IA de código abierto) en una GPU.
+"""Motor de Luza Canta en Modal: quita la voz de una canción con Demucs (IA de código abierto).
 
 Se publica solo desde GitHub (ver .github/workflows/motor.yml). Queda en:
     https://<tu-usuario-de-modal>--luza-motor.modal.run
@@ -50,10 +50,7 @@ class ErrorAmable(Exception):
     secrets=[modal.Secret.from_name("luza-youtube")],  # cookies de YouTube (las crea el workflow de GitHub)
 )
 def procesar(origen: dict) -> dict:
-    import json
-    import os
-    import re
-    import subprocess
+    import shutil
     import tempfile
     from pathlib import Path
 
@@ -63,6 +60,19 @@ def procesar(origen: dict) -> dict:
         progreso[id_trabajo] = texto
 
     trabajo = Path(tempfile.mkdtemp())
+    try:
+        return _procesar(origen, trabajo, avisar)
+    finally:
+        # Borra los archivos de esta canción para no llenar el disco del contenedor
+        shutil.rmtree(trabajo, ignore_errors=True)
+
+
+def _procesar(origen: dict, trabajo, avisar) -> dict:
+    import json
+    import os
+    import re
+    import subprocess
+
     titulo = origen.get("titulo") or "Canción"
 
     if origen.get("link"):
@@ -109,10 +119,13 @@ def procesar(origen: dict) -> dict:
 
     avisar("Preparando la canción… 🎼")
     entrada = trabajo / "cancion.wav"
-    subprocess.run(
+    conversion = subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", "-i", str(original), "-ac", "2", "-ar", "44100", str(entrada)],
-        check=True,
+        capture_output=True, text=True,
     )
+    if conversion.returncode != 0:
+        print(conversion.stderr[-3000:], flush=True)
+        raise ErrorAmable("No pude leer ese archivo. ¿Seguro que es una canción (MP3, M4A, WAV)?")
 
     avisar("La inteligencia artificial está separando la voz… 🪄")
     r = subprocess.run(
@@ -191,7 +204,7 @@ def web():
             print(f"estado {id_}: {e!r}", flush=True)
             return {"listo": False, "error": "Algo salió mal con el motor. Intenta de nuevo."}
         if r is None:
-            return {"listo": False, "mensaje": progreso.get(id_, "Despertando la inteligencia artificial… 😴 (puede tardar 1 minuto)")}
+            return {"listo": False, "mensaje": progreso.get(id_, "Despertando la inteligencia artificial o esperando turno… ⏳ (puede tardar 1 o 2 minutos)")}
         return {"listo": True, "titulo": r["titulo"]}
 
     @api.get("/pista/{id_}/{cual}")

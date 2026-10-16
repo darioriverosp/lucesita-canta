@@ -56,12 +56,27 @@ por otro lado y usa **“Subir MP3”**, que siempre funciona.
 ---
 
 ## Cómo se usa
-1. **Elige tu canción:** sube un MP3 del celular o pega un link de YouTube.
+👉 **https://luza-canta.netlify.app**
+
+1. **Elige tu canción:** sube un MP3 del celular, pega un link de YouTube, o desde WhatsApp mantén presionado el audio → **Compartir → Luza**.
 2. **¡Quitar la voz!**
-   - 🪄 **Con IA:** la mejor calidad (menos de 1 minuto). Si el motor estaba dormido, tarda 1 minuto más en despertar.
-   - ⚡ **Modo rápido:** al instante, sin internet para procesar, calidad más sencilla.
-3. **¡A cantar!** Escucha la pista, sube o baja el **tono** con ➖ ➕ y descarga la pista karaoke o solo la voz.
-   Todo queda guardado en **📚 Mis canciones**.
+   - 🪄 **Con IA:** la mejor calidad (2 a 4 minutos en CPU; menos de 1 minuto con GPU). Si el motor estaba dormido, tarda 1 minuto más en despertar.
+   - ⚡ **Modo rápido:** al instante en el celular, calidad más sencilla.
+3. **¡A cantar!**
+   - 🎧 **Voz guía:** deja la voz original bajita (20 % o 35 %) debajo de la pista para aprender la melodía.
+   - 🎛️ **Tono:** súbelo o bájalo con ➖ ➕ (hasta 6 semitonos).
+   - 💬 **Enviar por WhatsApp** o ⬇️ **Guardar en el celular** la pista karaoke o solo la voz.
+   - Todo queda en **📚 Mis canciones**, con buscador por nombre.
+
+## Link de YouTube (cookies)
+YouTube bloquea las descargas que vienen de servidores. Para que el link funcione, el motor usa las cookies de una
+**cuenta de Google secundaria** (nunca la principal):
+1. Ventana privada → inicia sesión → ve a `youtube.com/robots.txt` → exporta con la extensión *Get cookies.txt LOCALLY* → cierra la ventana (sin cerrar sesión).
+2. En GitHub: *Settings → Secrets and variables → Actions* → secreto `YT_COOKIES` con el contenido del archivo.
+3. *Actions → Publicar motor en Modal → Run workflow*.
+
+Si un día vuelve a salir *"YouTube no dejó bajar esta canción"*, las cookies vencieron: repite los 3 pasos.
+**Nunca pegues las cookies en un chat ni en el código.**
 
 ## Para programadores
 ```bash
@@ -70,6 +85,8 @@ npm run dev        # http://localhost:4321
 npm run build      # genera dist/
 npm run iconos     # vuelve a crear los PNG desde public/icons/icono.svg
 ```
-- Separación con IA: Demucs `htdemucs` (dos pistas) en una GPU T4 de Modal (`motor/modal_app.py`, FastAPI + `spawn` y consulta de estado).
-- Tono: SoundTouchJS en el navegador. MP3: lamejs. Historial: IndexedDB.
+- Separación con IA: Demucs `htdemucs` (dos pistas) en Modal (`motor/modal_app.py`, FastAPI + `spawn` y consulta de estado).
+  CPU por defecto; con la variable de GitHub `MOTOR_GPU=T4` usa GPU (requiere tarjeta en Modal).
+- Tono: SoundTouchJS en el navegador. MP3: lamejs. Historial: IndexedDB. Voz guía: mezcla en el navegador.
+- WhatsApp: *Web Share Target* (recibir) y *Web Share API* (enviar) — requiere la app instalada en Android.
 - Úsala para uso personal y del club, respetando los derechos de autor y los términos de YouTube.
