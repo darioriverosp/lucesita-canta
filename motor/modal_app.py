@@ -47,6 +47,7 @@ class ErrorAmable(Exception):
     timeout=15 * 60,
     max_containers=1,  # una canción a la vez: limita el gasto
     scaledown_window=120,  # se apaga a los 2 minutos sin uso (no cobra mientras duerme)
+    secrets=[modal.Secret.from_name("luza-youtube")],  # cookies de YouTube (las crea el workflow de GitHub)
 )
 def procesar(origen: dict) -> dict:
     import json
@@ -76,8 +77,8 @@ def procesar(origen: dict) -> dict:
             "max_filesize": 60 * 1024 * 1024,
             "match_filter": yt_dlp.utils.match_filter_func(f"duration <= {MAX_MINUTOS * 60}"),
         }
-        # Opcional: cookies de YouTube (variable YT_COOKIES) por si YouTube pide verificación
-        if os.environ.get("YT_COOKIES"):
+        # Cookies de una cuenta de YouTube (secreto YT_COOKIES en GitHub) para que YouTube no bloquee al servidor
+        if "youtube.com" in os.environ.get("YT_COOKIES", ""):
             (trabajo / "cookies.txt").write_text(os.environ["YT_COOKIES"])
             opciones["cookiefile"] = str(trabajo / "cookies.txt")
         try:

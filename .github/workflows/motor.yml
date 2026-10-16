@@ -16,6 +16,12 @@ jobs:
         with:
           python-version: "3.11"
       - run: pip install modal
+      - name: Guardar cookies de YouTube en Modal (opcional)
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+          YT_COOKIES: ${{ secrets.YT_COOKIES }}
+        run: modal secret create luza-youtube YT_COOKIES="${YT_COOKIES:-ninguna}" --force
       - name: Publicar
         env:
           MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
