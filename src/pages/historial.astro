@@ -5,6 +5,7 @@ import Base from '../layouts/Base.astro';
   <section class="tarjeta">
     <h2>📚 Mis canciones</h2>
     <p class="nota" style="margin-top:-6px">Las canciones que ya limpiaste quedan guardadas en este celular.</p>
+    <input id="buscar" class="campo buscador" type="search" placeholder="🔎 Buscar canción por nombre…" autocomplete="off" hidden />
     <div id="lista"></div>
   </section>
 
@@ -13,6 +14,18 @@ import Base from '../layouts/Base.astro';
     import { montarReproductor } from '../scripts/reproductor.js';
 
     const lista = document.getElementById('lista')!;
+    const buscar = document.getElementById('buscar') as HTMLInputElement;
+    const sinTildes = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    buscar.addEventListener('input', () => {
+      const q = sinTildes(buscar.value.trim());
+      let visibles = 0;
+      lista.querySelectorAll<HTMLElement>('.cancion').forEach((art) => {
+        const si = !q || sinTildes(art.dataset.titulo || '').includes(q);
+        art.hidden = !si;
+        if (si) visibles++;
+      });
+      document.getElementById('sin-resultados')?.toggleAttribute('hidden', visibles > 0);
+    });
     let abierto: { detener: () => void } | null = null;
 
     const fecha = (t: number) =>
@@ -20,6 +33,7 @@ import Base from '../layouts/Base.astro';
 
     async function pintar() {
       const canciones = await listar();
+      buscar.hidden = canciones.length < 2;
       if (!canciones.length) {
         lista.innerHTML = `
           <div class="vacio">
@@ -29,10 +43,11 @@ import Base from '../layouts/Base.astro';
           </div>`;
         return;
       }
-      lista.innerHTML = '';
+      lista.innerHTML = '<p class="vacio" id="sin-resultados" hidden>No encontré esa canción 🤔</p>';
       for (const c of canciones) {
         const art = document.createElement('article');
         art.className = 'cancion';
+        art.dataset.titulo = c.titulo;
         art.innerHTML = `
           <div class="cancion-cabeza">
             <span class="disco">${c.modo === 'ia' ? '💿' : '⚡'}</span>

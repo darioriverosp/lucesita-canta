@@ -18,6 +18,11 @@ import Base from '../layouts/Base.astro';
         <input type="file" id="archivo" accept="audio/*,.mp3,.m4a,.wav,.ogg,.flac" />
       </label>
       <p class="elegido" id="elegido" hidden></p>
+      <details class="nota ayuda-wa">
+        <summary><b>💬 ¿La canción te llegó por WhatsApp?</b></summary>
+        <p><b>Lo más fácil:</b> en WhatsApp mantén presionado el audio → toca <b>Compartir</b> (↗️) → elige <b>Lucesita</b>. ¡Se abre aquí solita!</p>
+        <p><b>O búscala aquí:</b> toca “Elegir la canción” → menú ☰ → <b>Audio</b> o <b>Archivos</b> → carpeta <b>WhatsApp Audio</b> o <b>WhatsApp Documents</b>.</p>
+      </details>
     </div>
 
     <div data-panel="youtube" hidden>
@@ -193,6 +198,31 @@ import Base from '../layouts/Base.astro';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
+    // ---- Canción o link compartidos desde WhatsApp (Compartir → Lucesita) ----
+    async function recibirCompartido() {
+      const params = new URLSearchParams(location.search);
+      const link = params.get('link');
+      if (params.has('compartido')) {
+        try {
+          const cache = await caches.open('lucesita-compartido');
+          const r = await cache.match('/compartido');
+          if (r) {
+            const nombre = decodeURIComponent(r.headers.get('X-Nombre') || 'Canción');
+            elegir(new File([await r.blob()], nombre, { type: r.headers.get('Content-Type') || 'audio/mpeg' }));
+            await cache.delete('/compartido');
+            $('elegido').textContent = `💬 Recibida de WhatsApp: ${nombre}`;
+          }
+        } catch {}
+      } else if (link && esYoutube(link)) {
+        (document.querySelector('[data-tab="youtube"]') as HTMLButtonElement).click();
+        linkInput.value = link;
+        revisar();
+      }
+      if (params.size) history.replaceState(null, '', '/');
+      if (archivo || linkInput.value) paso2.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     revisar();
+    recibirCompartido();
   </script>
 </Base>

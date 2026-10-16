@@ -1,5 +1,6 @@
 // Service worker de Lucesita Canta: permite instalarla y abrirla aunque haya mala señal.
-const CACHE = 'lucesita-v1';
+const CACHE = 'lucesita-v2';
+const COMPARTIDO = 'lucesita-compartido';
 const BASICOS = ['/', '/historial', '/manifest.webmanifest', '/icons/icono-192.png', '/icons/icono.svg'];
 
 self.addEventListener('install', (e) => {
@@ -14,9 +15,29 @@ self.addEventListener('activate', (e) => {
   );
 });
 
+// Cuando desde WhatsApp (u otra app) tocan "Compartir → Lucesita", llega aquí la canción o el link
+async function recibir(req) {
+  const datos = await req.formData();
+  const archivo = datos.get('audio');
+  if (archivo && archivo.size) {
+    const cache = await caches.open(COMPARTIDO);
+    await cache.put('/compartido', new Response(archivo, {
+      headers: { 'Content-Type': archivo.type || 'audio/mpeg', 'X-Nombre': encodeURIComponent(archivo.name || 'Canción') },
+    }));
+    return Response.redirect('/?compartido=1', 303);
+  }
+  const texto = `${datos.get('url') || ''} ${datos.get('text') || ''}`;
+  const link = texto.match(/https?://S+/);
+  return Response.redirect(link ? `/?link=${encodeURIComponent(link[0])}` : '/', 303);
+}
+
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   const url = new URL(req.url);
+  if (req.method === 'POST' && url.origin === location.origin && url.pathname === '/recibir') {
+    e.respondWith(recibir(req));
+    return;
+  }
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
   // Páginas: primero internet, si no hay, la copia guardada

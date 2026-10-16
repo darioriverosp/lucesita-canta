@@ -361,3 +361,18 @@ dialog label { font-weight: 800; display: block; margin: 12px 0 6px; }
   body { font-size: 19px; }
   .tarjeta { padding: 28px 28px; }
 }
+
+/* ---------- WhatsApp ---------- */
+.boton-whatsapp {
+  background: linear-gradient(135deg, #2bd46a, #12a150);
+  box-shadow: 0 6px 0 rgba(0, 100, 50, 0.35), 0 12px 24px -10px rgba(18, 161, 80, 0.7);
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.icono-wa { width: 1.5em; height: 1.5em; flex: none; }
+.boton-chico { min-height: 54px; font-size: 1rem; padding: 10px 8px; }
+.grupo-titulo { margin: 8px 0 -2px; font-weight: 800; color: var(--tinta-suave); font-size: 0.95rem; }
+.descargas .fila-botones { margin-top: 0; }
+.buscador { margin-bottom: 6px; }
+.ayuda-wa { margin-top: 14px; background: #effff7; border-radius: 16px; padding: 10px 14px; }
+.ayuda-wa summary { cursor: pointer; color: #0b6b3c; }
+.ayuda-wa p { margin: 8px 0 0; }
