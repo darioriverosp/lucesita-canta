@@ -10,8 +10,13 @@ API que usa la web:
     GET  /pista/{id}/{instrumental|voz}                 -> MP3
 """
 
+import os
+
 import modal
 
+# Sin tarjeta en Modal se usa CPU (2–4 min por canción). Con tarjeta, poner la variable MOTOR_GPU=T4
+# en GitHub (Settings → Secrets and variables → Actions → Variables) para que tarde menos de 1 minuto.
+GPU = os.environ.get("MOTOR_GPU") or None
 MAX_MINUTOS = 12
 MODELO = "htdemucs"
 
@@ -36,7 +41,9 @@ class ErrorAmable(Exception):
 
 @app.function(
     image=imagen_ia,
-    gpu="T4",
+    gpu=GPU,
+    cpu=4.0,
+    memory=8192,
     timeout=15 * 60,
     max_containers=1,  # una canción a la vez: limita el gasto
     scaledown_window=120,  # se apaga a los 2 minutos sin uso (no cobra mientras duerme)
@@ -108,7 +115,7 @@ def procesar(origen: dict) -> dict:
 
     avisar("La inteligencia artificial está separando la voz… 🪄")
     r = subprocess.run(
-        ["python", "-m", "demucs", "-n", MODELO, "-d", "cuda", "--two-stems=vocals", "--mp3", "--mp3-bitrate", "192",
+        ["python", "-m", "demucs", "-n", MODELO, "--two-stems=vocals", "--mp3", "--mp3-bitrate", "192",
          "-o", str(trabajo / "salida"), str(entrada)],
         capture_output=True, text=True,
     )
