@@ -211,7 +211,10 @@ def web():
     def pista(id_: str, cual: str):
         if cual not in ("instrumental", "voz"):
             raise HTTPException(404)
-        r = resultado(id_)
+        try:
+            r = resultado(id_)
+        except Exception:  # noqa: BLE001  (la canción falló: no hay pista que devolver)
+            raise HTTPException(404, "Esta canción no se pudo procesar.")
         if r is None:
             raise HTTPException(409, "Todavía no está lista.")
         return Response(r[cual], media_type="audio/mpeg")
