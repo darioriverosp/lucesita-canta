@@ -1,0 +1,74 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base titulo="Mis canciones · Lucesita Canta" pagina="historial">
+  <section class="tarjeta">
+    <h2>📚 Mis canciones</h2>
+    <p class="nota" style="margin-top:-6px">Las canciones que ya limpiaste quedan guardadas en este celular.</p>
+    <div id="lista"></div>
+  </section>
+
+  <script>
+    import { listar, borrar } from '../scripts/historial.js';
+    import { montarReproductor } from '../scripts/reproductor.js';
+
+    const lista = document.getElementById('lista')!;
+    let abierto: { detener: () => void } | null = null;
+
+    const fecha = (t: number) =>
+      new Date(t).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    async function pintar() {
+      const canciones = await listar();
+      if (!canciones.length) {
+        lista.innerHTML = `
+          <div class="vacio">
+            <span class="icono">🎤</span>
+            <p><b>Aún no hay canciones.</b><br/>Limpia tu primera canción y aparecerá aquí.</p>
+            <a class="boton" href="/" style="display:grid;place-items:center;text-decoration:none">✨ Limpiar una canción</a>
+          </div>`;
+        return;
+      }
+      lista.innerHTML = '';
+      for (const c of canciones) {
+        const art = document.createElement('article');
+        art.className = 'cancion';
+        art.innerHTML = `
+          <div class="cancion-cabeza">
+            <span class="disco">${c.modo === 'ia' ? '💿' : '⚡'}</span>
+            <div><h3></h3><small>${fecha(c.fecha)} · ${c.modo === 'ia' ? 'Con IA' : 'Modo rápido'}</small></div>
+          </div>
+          <div class="cancion-acciones">
+            <button class="boton boton-cielo abrir">▶️ Escuchar y cantar</button>
+            <button class="boton boton-suave borrar" aria-label="Borrar">🗑️</button>
+          </div>
+          <div class="reproductor" hidden></div>`;
+        art.querySelector('h3')!.textContent = c.titulo;
+        const zona = art.querySelector<HTMLElement>('.reproductor')!;
+        const abrir = art.querySelector<HTMLButtonElement>('.abrir')!;
+        abrir.addEventListener('click', () => {
+          if (!zona.hidden) {
+            abierto?.detener();
+            zona.hidden = true;
+            abrir.textContent = '▶️ Escuchar y cantar';
+            return;
+          }
+          abierto?.detener();
+          lista.querySelectorAll<HTMLElement>('.reproductor').forEach((z) => (z.hidden = true));
+          lista.querySelectorAll<HTMLButtonElement>('.abrir').forEach((b) => (b.textContent = '▶️ Escuchar y cantar'));
+          zona.hidden = false;
+          abrir.textContent = '🔽 Cerrar';
+          abierto = montarReproductor(zona, c);
+        });
+        art.querySelector('.borrar')!.addEventListener('click', async () => {
+          if (!confirm(`¿Borrar “${c.titulo}” de Mis canciones?`)) return;
+          await borrar(c.id);
+          pintar();
+        });
+        lista.appendChild(art);
+      }
+    }
+
+    pintar();
+  </script>
+</Base>

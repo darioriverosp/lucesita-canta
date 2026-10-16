@@ -1,0 +1,113 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  titulo?: string;
+  pagina: 'cantar' | 'historial';
+}
+const { titulo = 'Lucesita Canta', pagina } = Astro.props;
+
+// Lucecitas del fondo (posiciones fijas para que no cambien en cada visita)
+const colores = ['#ffc93c', '#ff3d8b', '#2ec5ff', '#2ee6a8', '#ffffff', '#c13cff'];
+const luces = Array.from({ length: 34 }, (_, i) => ({
+  x: (i * 37) % 100,
+  y: (i * 53 + 11) % 100,
+  t: 3 + ((i * 7) % 6),
+  d: 3 + ((i * 3) % 5),
+  r: (i * 0.37) % 4,
+  c: colores[i % colores.length],
+}));
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{titulo}</title>
+    <meta name="description" content="Quita la voz a tus canciones y canta karaoke con tu club." />
+    <meta name="theme-color" content="#5a1fd1" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icons/icono.svg" />
+    <link rel="apple-touch-icon" href="/icons/icono-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="fondo" aria-hidden="true">
+      {luces.map((l) => (
+        <span class="luz" style={`left:${l.x}%;top:${l.y}%;--t:${l.t}px;--d:${l.d}s;--r:${l.r}s;--c:${l.c}`} />
+      ))}
+    </div>
+
+    <main class="contenedor">
+      <header class="cabecera">
+        <h1 class="logo">✨ Lucesita <span class="brillo">Canta</span></h1>
+        <p class="lema">Quita la voz a tus canciones y ¡a cantar! 🎤</p>
+        <div class="instalar" id="instalar" hidden>
+          <p>📲 Instala Lucesita Canta en tu celular</p>
+          <button class="boton boton-sol" id="boton-instalar">Instalar</button>
+        </div>
+      </header>
+      <slot />
+    </main>
+
+    <nav class="menu" aria-label="Menú">
+      <a href="/" class={pagina === 'cantar' ? 'actual' : ''}><span class="ic">🎤</span>Cantar</a>
+      <a href="/historial" class={pagina === 'historial' ? 'actual' : ''}><span class="ic">📚</span>Mis canciones</a>
+      <button type="button" id="abrir-ajustes"><span class="ic">⚙️</span>Ajustes</button>
+    </nav>
+
+    <dialog id="ajustes">
+      <form method="dialog">
+        <h2>⚙️ Ajustes</h2>
+        <p class="nota">Aquí va el nombre del motor de inteligencia artificial (el Space de Hugging Face). Normalmente ya viene puesto; solo cámbialo si te lo piden.</p>
+        <label for="campo-motor">Motor</label>
+        <input id="campo-motor" class="campo" placeholder="usuario/lucesita-motor" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        <div class="fila-botones">
+          <button class="boton boton-suave" value="cancelar">Cancelar</button>
+          <button class="boton" value="guardar" id="guardar-ajustes">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script>
+      import { obtenerMotor, guardarMotor } from '../scripts/motor.js';
+
+      // Ajustes
+      const dialogo = document.getElementById('ajustes') as HTMLDialogElement;
+      const campo = document.getElementById('campo-motor') as HTMLInputElement;
+      document.getElementById('abrir-ajustes')!.addEventListener('click', () => {
+        campo.value = obtenerMotor();
+        dialogo.showModal();
+      });
+      dialogo.addEventListener('close', () => {
+        if (dialogo.returnValue === 'guardar') {
+          guardarMotor(campo.value);
+          location.reload();
+        }
+      });
+
+      // Instalar como app (Android)
+      let aviso: any = null;
+      const caja = document.getElementById('instalar')!;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        aviso = e;
+        caja.hidden = false;
+      });
+      document.getElementById('boton-instalar')!.addEventListener('click', async () => {
+        if (!aviso) return;
+        aviso.prompt();
+        await aviso.userChoice;
+        aviso = null;
+        caja.hidden = true;
+      });
+      window.addEventListener('appinstalled', () => (caja.hidden = true));
+
+      if ('serviceWorker' in navigator && import.meta.env.PROD) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+    </script>
+  </body>
+</html>

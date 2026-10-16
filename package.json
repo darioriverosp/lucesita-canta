@@ -1,0 +1,22 @@
+{
+  "name": "lucesita-canta",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "iconos": "node scripts/iconos.mjs"
+  },
+  "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "@gradio/client": "^2.7.1",
+    "astro": "^7.4.0",
+    "idb-keyval": "^6.3.0",
+    "soundtouchjs": "^0.3.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
+  }
+}
