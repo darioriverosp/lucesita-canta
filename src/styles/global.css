@@ -385,3 +385,12 @@ dialog label { font-weight: 800; display: block; margin: 12px 0 6px; }
   background: transparent; color: var(--tinta-suave); cursor: pointer;
 }
 .guia-opcion.activa { background: linear-gradient(135deg, var(--cielo), var(--violeta)); color: #fff; box-shadow: 0 6px 14px -6px rgba(108, 60, 255, 0.8); }
+
+/* ---------- Espacios al final de "¡A cantar!" ---------- */
+.descargas { gap: 14px; }
+.descargas .grupo-titulo { margin-top: 14px; }
+.guardada {
+  text-align: center; font-weight: 700; color: var(--tinta-suave); font-size: 0.95rem;
+  margin: 28px 0 18px; padding-top: 18px; border-top: 2px dashed #eadcff;
+}
+.guardada a { color: var(--magenta); font-weight: 800; }
